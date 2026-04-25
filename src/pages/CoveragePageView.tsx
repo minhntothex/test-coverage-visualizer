@@ -1,8 +1,8 @@
 import { Box, Container, Stack, Typography } from '@mui/material';
 import { CoverageOverview } from '../components/app/CoverageOverview';
-import { CoverageUpload } from '../components/app/CoverageUpload';
 import { FileDetail } from '../components/app/FileDetail';
 import { FileTree } from '../components/app/FileTree';
+import { UploadCoverage } from '../components/app/UploadCoverage';
 import { CoverageFileStatus, CoverageSummary, FileCoverage } from '../types/coverage';
 
 type CoveragePageViewProps = {
@@ -13,8 +13,10 @@ type CoveragePageViewProps = {
   selectedFile: FileCoverage | null;
   selectedPath: string | null;
   summary: CoverageSummary;
+  showResults: boolean;
   onSelectFile: (path: string) => void;
   onUpload: (file: File) => void;
+  onViewResults: () => void;
 };
 
 export function CoveragePageView({
@@ -25,9 +27,13 @@ export function CoveragePageView({
   selectedFile,
   selectedPath,
   summary,
+  showResults,
   onSelectFile,
   onUpload,
+  onViewResults,
 }: CoveragePageViewProps) {
+  const hasResults = showResults && files.length > 0;
+
   return (
     <Box sx={{ minHeight: '100vh', py: { xs: 2, md: 4 } }}>
       <Container maxWidth="xl">
@@ -41,14 +47,17 @@ export function CoveragePageView({
             </Typography>
           </Box>
 
-          <CoverageUpload
-            error={error}
-            fileStatus={fileStatus}
-            loading={loading}
-            onUpload={onUpload}
-          />
+          {!hasResults && (
+            <UploadCoverage
+              error={error}
+              fileStatus={fileStatus}
+              loading={loading}
+              onUpload={onUpload}
+              onViewResults={onViewResults}
+            />
+          )}
 
-          {files.length > 0 && <CoverageOverview summary={summary} />}
+          {hasResults && <CoverageOverview summary={summary} />}
 
           <Box
             sx={{
@@ -57,8 +66,12 @@ export function CoveragePageView({
               gridTemplateColumns: { xs: '1fr', md: '360px minmax(0, 1fr)' },
             }}
           >
-            <FileTree files={files} onSelectFile={onSelectFile} selectedPath={selectedPath} />
-            <FileDetail file={selectedFile} />
+            {hasResults && (
+              <>
+                <FileTree files={files} onSelectFile={onSelectFile} selectedPath={selectedPath} />
+                <FileDetail file={selectedFile} />
+              </>
+            )}
           </Box>
         </Stack>
       </Container>

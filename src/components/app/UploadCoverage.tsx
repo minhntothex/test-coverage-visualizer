@@ -1,20 +1,22 @@
-import { ChangeEvent, DragEvent, useRef, useState } from 'react';
-import { CoverageUploadView } from './CoverageUploadView';
+import { ChangeEvent, DragEvent, KeyboardEvent, useRef, useState } from 'react';
 import { CoverageFileStatus } from '../../types/coverage';
+import { UploadCoverageView } from './UploadCoverageView';
 
-type CoverageUploadProps = {
+type UploadCoverageProps = {
   fileStatus: CoverageFileStatus | null;
   error: string | null;
   loading: boolean;
   onUpload: (file: File) => void;
+  onViewResults: () => void;
 };
 
-export function CoverageUpload({
+export function UploadCoverage({
   fileStatus,
   error,
   loading,
   onUpload,
-}: CoverageUploadProps) {
+  onViewResults,
+}: UploadCoverageProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [dragActive, setDragActive] = useState(false);
 
@@ -44,22 +46,34 @@ export function CoverageUpload({
     setDragActive(true);
   }
 
-  function handleDragLeave(): void {
-    setDragActive(false);
+  function handleDragLeave(event: DragEvent<HTMLDivElement>): void {
+    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+      setDragActive(false);
+    }
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openFilePicker();
+    }
   }
 
   return (
-    <CoverageUploadView
+    <UploadCoverageView
       dragActive={dragActive}
       error={error}
       fileStatus={fileStatus}
       inputRef={inputRef}
       loading={loading}
+      onCardClick={openFilePicker}
+      onCardKeyDown={handleKeyDown}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       onInputChange={handleInputChange}
       onOpenFilePicker={openFilePicker}
+      onViewResults={onViewResults}
     />
   );
 }
